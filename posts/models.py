@@ -13,7 +13,17 @@ class Post(models.Model):
     class Meta:
         ordering = ['-created']
 
+    def __str__(self):
+        return self.title
+
 
 class Vote(models.Model):
+    """Vote Model (one vote for user for one post)
+    """
     voter = models.ForeignKey(User, on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        voter = self.voter.username
+        post = self.post.title
+        return f'{voter} - {post}'
