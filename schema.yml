@@ -4,6 +4,18 @@ info:
   version: 1.0.0
   description: Simple API
 paths:
+  /api/info/:
+    get:
+      operationId: api_info_retrieve
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
   /api/posts/:
     get:
       operationId: api_posts_list
@@ -70,7 +82,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Post'
+                $ref: '#/components/schemas/PostDetail'
           description: ''
     put:
       operationId: api_posts_update
@@ -86,13 +98,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Post'
+              $ref: '#/components/schemas/PostDetail'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/Post'
+              $ref: '#/components/schemas/PostDetail'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/Post'
+              $ref: '#/components/schemas/PostDetail'
         required: true
       security:
       - cookieAuth: []
@@ -102,7 +114,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Post'
+                $ref: '#/components/schemas/PostDetail'
           description: ''
     patch:
       operationId: api_posts_partial_update
@@ -118,13 +130,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedPost'
+              $ref: '#/components/schemas/PatchedPostDetail'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/PatchedPost'
+              $ref: '#/components/schemas/PatchedPostDetail'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/PatchedPost'
+              $ref: '#/components/schemas/PatchedPostDetail'
       security:
       - cookieAuth: []
       - basicAuth: []
@@ -133,7 +145,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Post'
+                $ref: '#/components/schemas/PostDetail'
           description: ''
     delete:
       operationId: api_posts_destroy
@@ -201,11 +213,43 @@ paths:
       responses:
         '204':
           description: No response body
+  /nested/:
+    get:
+      operationId: nested_list
+      tags:
+      - nested
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserSecond'
+          description: ''
 components:
   schemas:
-    PatchedPost:
+    Nested:
       type: object
-      description: Post model serializer
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        voter:
+          type: integer
+        post:
+          type: integer
+      required:
+      - id
+      - post
+      - voter
+    PatchedPostDetail:
+      type: object
+      description: Post detail model serializer
       properties:
         id:
           type: integer
@@ -229,8 +273,10 @@ components:
           type: string
           format: date-time
           readOnly: true
-        votes:
-          type: integer
+        vote_post:
+          type: array
+          items:
+            $ref: '#/components/schemas/Nested'
           readOnly: true
     Post:
       type: object
@@ -269,6 +315,66 @@ components:
       - title
       - url
       - votes
+    PostDetail:
+      type: object
+      description: Post detail model serializer
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 100
+        url:
+          type: string
+          format: uri
+          maxLength: 200
+        poster:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          readOnly: true
+        poster_id:
+          type: integer
+          readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        vote_post:
+          type: array
+          items:
+            $ref: '#/components/schemas/Nested'
+          readOnly: true
+      required:
+      - created
+      - id
+      - poster
+      - poster_id
+      - title
+      - url
+      - vote_post
+    UserSecond:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        author_comment:
+          type: array
+          items:
+            $ref: '#/components/schemas/Nested'
+          readOnly: true
+      required:
+      - author_comment
+      - id
+      - username
     Vote:
       type: object
       description: Vote model serializer

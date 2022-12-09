@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
     # Local
     'posts',
+    'nesting',
 ]
 
 MIDDLEWARE = [

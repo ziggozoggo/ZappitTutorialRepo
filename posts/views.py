@@ -1,8 +1,21 @@
+from rest_framework.reverse import reverse, reverse_lazy
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from rest_framework import generics, permissions, mixins, status
 from rest_framework.exceptions import ValidationError
-from .serializers import PostSerializer, VoteSerializer
+from .serializers import PostSerializer, VoteSerializer, PostDetailSerializer
 from .models import Post, Vote
+
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    res = Response({
+        'List of posts': reverse('posts_list', request=request, format=format),
+        'Post Detail <int:pk>': reverse('post_detail', request=request, format=format, kwargs={'pk': 1}),
+        'Post Vote <int:pk>/vote': reverse('create_vote', request=request, format=format, kwargs={'pk': 1}),
+    })
+
+    return res
 
 # Create your views here.
 class PostList(generics.ListCreateAPIView):
@@ -53,7 +66,7 @@ class VoteCreate(generics.CreateAPIView, mixins.DestroyModelMixin):
 
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
-    serializer_class = PostSerializer
+    serializer_class = PostDetailSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def delete(self, request, *args, **kwargs):
@@ -62,6 +75,7 @@ class PostDetail(generics.RetrieveUpdateDestroyAPIView):
             return self.destroy(request, *args, **kwargs)
         else:
             raise ValidationError('You are not owner of post')
+
 
 
 
